@@ -122,7 +122,13 @@ class TargetSpace(object):
                 "Size of array ({}) is different than the ".format(len(x)) +
                 "expected number of parameters ({}).".format(len(self.keys))
             )
-        return dict(zip(self.keys, x))
+        paramsDict = dict(zip(self.keys, x))
+        if(self._btypes is not None):
+            btypes = list(self._btypes)
+            for i,k in enumerate(self.keys):
+                dtype = btypes[i]
+                paramsDict[k] = dtype(paramsDict[k])
+        return paramsDict
 
     def _as_array(self, x):
         try:
@@ -208,8 +214,13 @@ class TargetSpace(object):
         try:
             target = self._cache[_hashable(x)]
         except KeyError:
-            params = dict(zip(self._keys, x))
-            target = self.target_func(**params)
+            paramsDict = dict(zip(self._keys, x))
+            if(self._btypes is not None):
+                btypes = list(self._btypes)
+                for i,k in enumerate(self.keys):
+                    dtype = btypes[i]
+                    paramsDict[k] = dtype(paramsDict[k])
+            target = self.target_func(**paramsDict)
             self.register(x, target)
         return target
 
